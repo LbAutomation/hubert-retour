@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Rien ne part d'ici : ni requête, ni ressource externe, et l'adresse n'est transmise à personne. -->
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>Hubert</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 24px; background: #f6f6f4; color: #1d1d1b; }
+  main { max-width: 480px; margin: 8vh auto; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { line-height: 1.45; margin: 8px 0; }
+  textarea { width: 100%; box-sizing: border-box; height: 92px; font: 13px ui-monospace, monospace; border: 1px solid #ddd; border-radius: 10px; padding: 10px; margin: 12px 0; resize: none; }
+  button, a.bouton { display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 14px; font-size: 17px; border-radius: 12px; border: 0; margin: 10px 0; text-decoration: none; }
+  button { background: #1d1d1b; color: #fff; }
+  a.bouton { background: #2aabee; color: #fff; }
+  .erreur { color: #b42318; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="titre">Presque fini</h1>
+  <p id="texte">Copie ce texte, puis envoie-le à Hubert dans ta conversation Telegram.</p>
+  <textarea id="adresse" readonly></textarea>
+  <button id="copier" type="button">Copier</button>
+  <a class="bouton" href="https://t.me/hubert_ia_bot">Revenir sur Telegram</a>
+</main>
+<script>
+  // Page de retour de connexion pour Hubert : elle affiche seulement l'adresse reçue, qui
+  // contient un code à usage unique, inutilisable sans le secret gardé sur le serveur.
+  var adresse = location.href;
+  var champ = document.getElementById("adresse");
+  champ.value = adresse;
+  var params = new URLSearchParams(location.search);
+  if (params.get("error")) {
+    document.getElementById("titre").textContent = "La connexion a été refusée";
+    document.getElementById("texte").className = "erreur";
+    document.getElementById("texte").textContent = "Envoie quand même ce texte à Hubert : il te dira pourquoi.";
+  } else if (!params.get("code")) {
+    document.getElementById("titre").textContent = "Rien à faire ici";
+    document.getElementById("texte").textContent = "Cette page sert seulement au retour d'une connexion demandée par Hubert.";
+    champ.style.display = "none";
+    document.getElementById("copier").style.display = "none";
+  }
+  document.getElementById("copier").addEventListener("click", function () {
+    var bouton = this;
+    var fini = function () { bouton.textContent = "Copié ✓"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(adresse).then(fini, function () { champ.select(); document.execCommand("copy"); fini(); });
+    } else {
+      champ.select();
+      document.execCommand("copy");
+      fini();
+    }
+  });
+</script>
+</body>
+</html>
